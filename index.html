@@ -35,48 +35,38 @@
 
   <!-- Firebase + lógica de conteo 1 vez por navegador -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
-    // ID del elemento contador en la otra página; aquí no mostramos contador.
-    // Configuración Firebase (ya la tienes) — mantenla igual
-    const firebaseConfig = {
-      apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
-      authDomain: "rualshackathon.firebaseapp.com",
-      databaseURL: "https://rualshackathon-default-rtdb.firebaseio.com",
-      projectId: "rualshackathon",
-      storageBucket: "rualshackathon.firebasestorage.app",
-      messagingSenderId: "121871943295",
-      appId: "1:121871943295:web:75a8d37a0c39a39fe1a14a",
-      measurementId: "G-1FSZ6Q58ZQ"
-    };
+  // Elemento donde se mostrará el contador
+  const COUNTER_EL = document.getElementById('counter'); // cambiar si es otra página
 
-    // Clave localStorage usada para marcar que ya contamos a este navegador
-    const COUNTED_KEY = 'ruals_counted_v1';
+  const firebaseConfig = {
+    apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
+    authDomain: "rualshackathon.firebaseapp.com",
+    databaseURL: "https://rualshackathon-default-rtdb.firebaseio.com",
+    projectId: "rualshackathon",
+    storageBucket: "rualshackathon.firebasestorage.app",
+    messagingSenderId: "121871943295",
+    appId: "1:121871943295:web:75a8d37a0c39a39fe1a14a",
+    measurementId: "G-1FSZ6Q58ZQ"
+  };
 
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const counterRef = ref(db, 'counter');
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const counterRef = ref(db, 'counter');
 
-    // Solo incrementar si no existe la marca localStorage
-    async function countOnceIfNeeded() {
-      try {
-        if (localStorage.getItem(COUNTED_KEY)) {
-          // ya contado en este navegador — no hacemos nada
-          return;
-        }
-        // runTransaction es seguro para concurrencia
-        await runTransaction(counterRef, current => (current || 0) + 1);
-        // marcar para no volver a contar desde este navegador
-        localStorage.setItem(COUNTED_KEY, '1');
-      } catch (err) {
-        console.warn('No se pudo incrementar contador en Firebase (index):', err);
-      }
-    }
+  // Incrementar contador (suma 1 aunque recargues)
+  runTransaction(counterRef, current => (current || 0) + 1)
+    .catch(err => console.warn('No se pudo actualizar contador:', err));
 
-    // Ejecutamos inmediatamente (sin mostrar nada al usuario aparte del loader)
-    countOnceIfNeeded();
-  </script>
+  // Mostrar el contador en tiempo real
+  onValue(counterRef, snapshot => {
+    COUNTER_EL.textContent = snapshot.val()?.toLocaleString() || '0';
+    COUNTER_EL.classList.add('counter-updated');
+    setTimeout(() => COUNTER_EL.classList.remove('counter-updated'), 700);
+  });
+</script>
+
 </body>
 </html>
