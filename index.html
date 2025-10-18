@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ruals — Simulación Anti-Phishing</title>
+  <meta name="description" content="Simulación formativa anti-phishing. Proyecto Ruals.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="wrap">
+    <section class="panel">
+      <header class="panel-header">
+        <div class="logo">Ruals</div>
+        <div class="tag">SIMULACIÓN EDUCATIVA</div>
+      </header>
+
+      <h1 class="headline">Si esto fuera phishing... <span class="red">habrías picado</span></h1>
+
+      <div class="visual-row">
+        <img src="https://i.imgur.com/2Tt3LqV.png" alt="Pescador phishing" class="visual-img">
+        <div class="counter-box" aria-live="polite">
+          <div class="counter-title">Personas que han picado</div>
+          <p>👀 <strong id="counter">0</strong> personas ya habrían caído</p>
+          <div class="counter-sub">métrica agregada · sin datos personales</div>
+        </div>
+      </div>
+
+      <p class="lead">
+        Tranquilo — con <strong>Ruals</strong> aprenderás a detectar correos falsos. Si has llegado aquí desde el correo,
+        pulsa el botón de feedback y verás consejos inmediatos.
+      </p>
+
+      <div class="actions">
+        <a class="btn primary" href="https://forms.gle/TU_GOOGLE_FORM_PREFILLED" target="_blank" rel="noopener">He clicado — Ver feedback</a>
+        <a class="btn ghost" href="#tips" onclick="document.getElementById('tips').scrollIntoView({behavior:'smooth'});return false;">Ver 3 consejos</a>
+      </div>
+
+      <section id="tips" class="tips">
+        <h3>3 señales rápidas</h3>
+        <ul>
+          <li>Remitente genérico (no aparece tu nombre)</li>
+          <li>Enlace extraño (pasa el ratón para comprobar)</li>
+          <li>Petición de información urgente o confidencial</li>
+        </ul>
+      </section>
+
+      <footer class="foot">Proyecto Ruals — Hackathon Sabadell — Simulación educativa</footer>
+    </section>
+  </main>
+
+  <!-- Firebase + contador global -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    const COUNTER_EL = document.getElementById('counter');
+
+    // Configuración Firebase (usa la tuya)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
+      authDomain: "rualshackathon.firebaseapp.com",
+      databaseURL: "https://rualshackathon-default-rtdb.firebaseio.com",
+      projectId: "rualshackathon",
+      storageBucket: "rualshackathon.firebasestorage.app",
+      messagingSenderId: "121871943295",
+      appId: "1:121871943295:web:75a8d37a0c39a39fe1a14a",
+      measurementId: "G-1FSZ6Q58ZQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const counterRef = ref(db, 'counter');
+
+    // Incrementar y mostrar contador global
+    runTransaction(counterRef, current => (current || 0) + 1)
+      .then(snapshot => {
+        COUNTER_EL.textContent = snapshot.snapshot.val().toLocaleString();
+      })
+      .catch(err => {
+        console.warn('No se pudo actualizar contador:', err);
+        COUNTER_EL.textContent = '—';
+      });
+  </script>
+</body>
+</html>
