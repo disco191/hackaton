@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Simulación: Archivo descargado — Ruals</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body{font-family:Inter,Arial,sans-serif;background:#071226;color:#e6f3ff;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:20px;border-radius:12px;max-width:720px;width:100%;text-align:center}
+    .title{font-size:20px;margin-bottom:10px;color:#00d1ff}
+    .notice{background:#ffe9e9;color:#8b1b1b;padding:10px;border-radius:8px;margin-bottom:12px;font-weight:700}
+    .explain{color:#cfeeff;text-align:left}
+    .btn{display:inline-block;margin-top:12px;padding:10px 14px;border-radius:8px;background:#0074ff;color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="title">Descargando archivo...</div>
+    <div id="status" class="notice">Preparando descarga segura...</div>
+
+    <div id="explain" class="explain" style="display:none">
+      <p><strong>Simulación educativa:</strong> el archivo descargado es un PDF inofensivo. No contiene código ejecutable ni macros.</p>
+      <p>Objetivo: mostrar cómo podría sentirse un usuario que descarga un archivo desde un correo/QR. Si esto fuera un archivo malicioso, podrían ocurrir compromisos del equipo; por eso la formación es clave.</p>
+      <a class="btn" href="/hackaton/" target="_blank" rel="noopener">Volver a la página principal</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    // Config Firebase (usa la tuya)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
+      authDomain: "rualshackathon.firebaseapp.com",
+      databaseURL: "https://rualshackathon-default-rtdb.firebaseio.com",
+      projectId: "rualshackathon",
+      storageBucket: "rualshackathon.firebasestorage.app",
+      messagingSenderId: "121871943295",
+      appId: "1:121871943295:web:75a8d37a0c39a39fe1a14a",
+      measurementId: "G-1FSZ6Q58ZQ"
+    };
+
+    const COUNTED_KEY = 'ruals_counted_v1';
+    const pdfUrl = 'presentacion.pdf'; // asegúrate de que presentacion.pdf está en la misma carpeta
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const counterRef = ref(db, 'counter');
+
+    async function maybeCountThenDownload() {
+      try {
+        // Solo incrementa si no hay marca local
+        if (!localStorage.getItem(COUNTED_KEY)) {
+          try {
+            await runTransaction(counterRef, current => (current || 0) + 1);
+            localStorage.setItem(COUNTED_KEY, '1');
+          } catch (err) {
+            console.warn('No se pudo incrementar contador (download):', err);
+            // seguir con descarga aun así
+          }
+        }
+        // Descargar el PDF (forzar save-as mediante blob)
+        const res = await fetch(pdfUrl, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Error al descargar');
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = 'presentacion.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(blobUrl);
+
+        // Mostrar debrief
+        document.getElementById('status').style.display = 'none';
+        document.getElementById('explain').style.display = 'block';
+      } catch (err) {
+        document.getElementById('status').textContent = 'No se pudo descargar automáticamente. Pulsa aquí:';
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.textContent = 'Descargar presentacion.pdf';
+        link.className = 'btn';
+        document.getElementById('status').appendChild(document.createElement('br'));
+        document.getElementById('status').appendChild(link);
+        console.error(err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      maybeCountThenDownload();
+    });
+  </script>
+</body>
+</html>
