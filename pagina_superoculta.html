@@ -30,5 +30,34 @@
     </section>
   </main>
 
-  </body>
+  <!-- Firebase + contador global -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    const COUNTER_EL = document.getElementById('counter');
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
+      authDomain: "rualshackathon.firebaseapp.com",
+      databaseURL: "https://rualshackathon-default-rtdb.firebaseio.com",
+      projectId: "rualshackathon",
+      storageBucket: "rualshackathon.firebasestorage.app",
+      messagingSenderId: "121871943295",
+      appId: "1:121871943295:web:75a8d37a0c39a39fe1a14a",
+      measurementId: "G-1FSZ6Q58ZQ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const counterRef = ref(db, 'counter');
+
+    // Mostrar contador en tiempo real
+    onValue(counterRef, snapshot => {
+      COUNTER_EL.textContent = snapshot.val()?.toLocaleString() || '0';
+      COUNTER_EL.classList.add('counter-updated');
+      setTimeout(() => COUNTER_EL.classList.remove('counter-updated'), 700);
+    });
+  </script>
+</body>
 </html>
