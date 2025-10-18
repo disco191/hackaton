@@ -54,10 +54,10 @@
         // Solo incrementa si no hay marca local
         if (!localStorage.getItem(COUNTED_KEY)) {
           try {
-            await runTransaction(counterRef, current => (current || 0) + 1);
-            localStorage.setItem(COUNTED_KEY, '1');
+            //await runTransaction(counterRef, current => (current || 0) + 1);
+            //localStorage.setItem(COUNTED_KEY, '1');
           } catch (err) {
-            console.warn('No se pudo incrementar contador (download):', err);
+            //console.warn('No se pudo incrementar contador (download):', err);
             // seguir con descarga aun así
           }
         }
