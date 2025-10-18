@@ -21,29 +21,10 @@
         <img src="https://i.imgur.com/2Tt3LqV.png" alt="Pescador phishing" class="visual-img">
         <div class="counter-box" aria-live="polite">
           <div class="counter-title">Personas que han picado</div>
-          <p>👀 <strong id="counter">0</strong> personas ya habrían caído</p>
-          <div class="counter-sub">métrica agregada · sin datos personales</div>
+          <p>👀 <strong id="counter">0</strong></p>
+          <div class="counter-sub">métrica global · sin datos personales</div>
         </div>
       </div>
-
-      <p class="lead">
-        Tranquilo — con <strong>Ruals</strong> aprenderás a detectar correos falsos. Si has llegado aquí desde el correo,
-        pulsa el botón de feedback y verás consejos inmediatos.
-      </p>
-
-      <div class="actions">
-        <a class="btn primary" href="https://forms.gle/TU_GOOGLE_FORM_PREFILLED" target="_blank" rel="noopener">He clicado — Ver feedback</a>
-        <a class="btn ghost" href="#tips" onclick="document.getElementById('tips').scrollIntoView({behavior:'smooth'});return false;">Ver 3 consejos</a>
-      </div>
-
-      <section id="tips" class="tips">
-        <h3>3 señales rápidas</h3>
-        <ul>
-          <li>Remitente genérico (no aparece tu nombre)</li>
-          <li>Enlace extraño (pasa el ratón para comprobar)</li>
-          <li>Petición de información urgente o confidencial</li>
-        </ul>
-      </section>
 
       <footer class="foot">Proyecto Ruals — Hackathon Sabadell — Simulación educativa</footer>
     </section>
@@ -52,11 +33,10 @@
   <!-- Firebase + contador global -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
     const COUNTER_EL = document.getElementById('counter');
 
-    // Configuración Firebase (usa la tuya)
     const firebaseConfig = {
       apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
       authDomain: "rualshackathon.firebaseapp.com",
@@ -72,15 +52,16 @@
     const db = getDatabase(app);
     const counterRef = ref(db, 'counter');
 
-    // Incrementar y mostrar contador global
+    // Incrementar contador
     runTransaction(counterRef, current => (current || 0) + 1)
-      .then(snapshot => {
-        COUNTER_EL.textContent = snapshot.snapshot.val().toLocaleString();
-      })
-      .catch(err => {
-        console.warn('No se pudo actualizar contador:', err);
-        COUNTER_EL.textContent = '—';
-      });
+      .catch(err => console.warn('No se pudo actualizar contador:', err));
+
+    // Mostrar contador en tiempo real
+    onValue(counterRef, snapshot => {
+      COUNTER_EL.textContent = snapshot.val()?.toLocaleString() || '0';
+      COUNTER_EL.classList.add('counter-updated');
+      setTimeout(() => COUNTER_EL.classList.remove('counter-updated'), 700);
+    });
   </script>
 </body>
 </html>
