@@ -50,9 +50,8 @@
     <div id="status" class="notice">Preparando descarga segura...</div>
 
     <div id="explain" class="explain" style="display:none">
-      <p><strong>Simulación educativa:</strong> el archivo descargado es un PDF inofensivo. No contiene código ejecutable ni macros.</p>
-      <p>Objetivo: mostrar cómo podría sentirse un usuario que descarga un archivo desde un correo/QR. Si esto fuera un archivo malicioso, podrían ocurrir compromisos del equipo; por eso la formación es clave.</p>
-      <a class="btn" href="/hackaton/" target="_blank" rel="noopener">Volver a la página principal</a>
+  	<p>Gracias por descargar nuestra presentación. Esperamos que la disfrutes y te sea útil.</p>
+  	<a class="btn" href="/hackaton/" target="_blank" rel="noopener">Volver a la página principal</a>
     </div>
   </div>
 
@@ -107,7 +106,7 @@
         document.getElementById('status').style.display = 'none';
         document.getElementById('explain').style.display = 'block';
       } catch (err) {
-        document.getElementById('status').textContent = 'No se pudo descargar automáticamente. Pulsa aquí:';
+        document.getElementById('status').textContent = 'Descargar archivo. Pulsa aquí:';
         const link = document.createElement('a');
         link.href = pdfUrl;
         link.textContent = 'Descargar presentacion.pdf';
