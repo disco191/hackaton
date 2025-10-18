@@ -3,48 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ruals — Simulación Anti-Phishing (Cargando)</title>
+  <title>Ruals — Simulación Anti-Phishing</title>
   <meta name="description" content="Simulación formativa anti-phishing. Proyecto Ruals.">
   <link rel="stylesheet" href="styles.css">
-  <style>
-    /* Overlay de carga (añade esto en caso de que quieras que sea independiente) */
-    .loader-overlay{
-      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(180deg, rgba(2,6,23,0.85), rgba(2,6,23,0.93));
-      z-index:9999;color:#e6f3ff;flex-direction:column;
-    }
-    .spinner{
-      width:80px;height:80px;border-radius:50%;border:8px solid rgba(255,255,255,0.08);
-      border-top-color:#00d1ff;animation:spin 1s linear infinite;margin-bottom:18px;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loader-text{font-family:Inter,Arial;opacity:.95}
-    .small-note{font-size:13px;color:#9fb0c8;margin-top:12px}
-  </style>
 </head>
 <body>
-  <!-- UI principal (oculta, la simulación es pantalla de carga) -->
-  <main class="wrap" aria-hidden="true" style="visibility:hidden;pointer-events:none;">
-    <!-- (Tu contenido principal si algún día quieres mostrarlo) -->
+  <main class="wrap">
+    <section class="panel">
+      <header class="panel-header">
+        <div class="logo">Ruals</div>
+        <div class="tag">SIMULACIÓN EDUCATIVA</div>
+      </header>
+
+      <h1 class="headline">Si esto fuera phishing... <span class="red">habrías picado</span></h1>
+
+      <div class="visual-row">
+        <img src="https://i.imgur.com/2Tt3LqV.png" alt="Pescador phishing" class="visual-img">
+        <div class="counter-box" aria-live="polite">
+          <div class="counter-title">Personas que han picado</div>
+          <p>👀 <strong id="counter">0</strong></p>
+          <div class="counter-sub">métrica global · sin datos personales</div>
+        </div>
+      </div>
+
+      <footer class="foot">Proyecto Ruals — Hackathon Sabadell — Simulación educativa</footer>
+    </section>
   </main>
 
-  <!-- Overlay de "cargando" visible permanentemente -->
-  <div class="loader-overlay" role="status" aria-live="polite">
-    <div class="spinner" aria-hidden="true"></div>
-    <div class="loader-text">
-      Cargando recursos...<br/>
-      (si esto fuera un ataque real, habrías interactuado)
-    </div>
-    <div class="small-note">SIMULACIÓN EDUCATIVA — Ruals</div>
-  </div>
-
-  <!-- Firebase + lógica de conteo 1 vez por navegador -->
+  <!-- Firebase + contador global -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+    import { getDatabase, ref, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
-    // ID del elemento contador en la otra página; aquí no mostramos contador.
-    // Configuración Firebase (ya la tienes) — mantenla igual
+    const COUNTER_EL = document.getElementById('counter');
+
     const firebaseConfig = {
       apiKey: "AIzaSyBB_FX-AlAlpMVZeBufOiczQt6msxCdK7g",
       authDomain: "rualshackathon.firebaseapp.com",
@@ -56,32 +48,20 @@
       measurementId: "G-1FSZ6Q58ZQ"
     };
 
-    // Clave localStorage usada para marcar que ya contamos a este navegador
-    const COUNTED_KEY = 'ruals_counted_v1';
-
-    // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const counterRef = ref(db, 'counter');
 
-    // Solo incrementar si no existe la marca localStorage
-    async function countOnceIfNeeded() {
-      try {
-        if (localStorage.getItem(COUNTED_KEY)) {
-          // ya contado en este navegador — no hacemos nada
-          return;
-        }
-        // runTransaction es seguro para concurrencia
-        await runTransaction(counterRef, current => (current || 0) + 1);
-        // marcar para no volver a contar desde este navegador
-        localStorage.setItem(COUNTED_KEY, '1');
-      } catch (err) {
-        console.warn('No se pudo incrementar contador en Firebase (index):', err);
-      }
-    }
+    // Incrementar contador
+    runTransaction(counterRef, current => (current || 0) + 1)
+      .catch(err => console.warn('No se pudo actualizar contador:', err));
 
-    // Ejecutamos inmediatamente (sin mostrar nada al usuario aparte del loader)
-    countOnceIfNeeded();
+    // Mostrar contador en tiempo real
+    onValue(counterRef, snapshot => {
+      COUNTER_EL.textContent = snapshot.val()?.toLocaleString() || '0';
+      COUNTER_EL.classList.add('counter-updated');
+      setTimeout(() => COUNTER_EL.classList.remove('counter-updated'), 700);
+    });
   </script>
 </body>
 </html>
