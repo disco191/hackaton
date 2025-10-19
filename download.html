@@ -82,12 +82,12 @@
         // =========================
         // Contador comentado para pruebas
         // =========================
-        /*
+        
         if (!localStorage.getItem(COUNTED_KEY)) {
           await runTransaction(counterRef, current => (current || 0) + 1);
           localStorage.setItem(COUNTED_KEY, '1');
         }
-        */
+        
 
         // Descargar el PDF automáticamente
         const res = await fetch(pdfUrl, { cache: 'no-store' });
